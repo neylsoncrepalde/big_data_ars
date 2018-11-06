@@ -79,5 +79,18 @@ plot(g_citacoes, vertex.size = degree(g_citacoes, normalized = T)*300,
      layout = layoutgg)
 
 # Quem são os usuários mais citados?
-grau = degree(g_citacoes)
-sort(grau, decreasing = T)
+indeg = degree(g_citacoes, mode = "in")
+sort(indeg, decreasing = T)
+sort(indeg, decreasing = T)[1:10]
+
+# Verificando a distribuição do grau
+ggplot(NULL, aes(indeg)) +
+  geom_histogram() +
+  labs(title = "Distribuição do Grau", x = "", y = "", 
+       subtitle = "Dados coletados do Twitter em 06/11/2018")
+
+
+## Rede de retweets ####
+
+
+
