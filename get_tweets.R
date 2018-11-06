@@ -105,3 +105,6 @@ plot(g_citacoes, vertex.size = degree(g_citacoes, normalized = T)*300,
      edge.arrow.size = .3, edge.color = adjustcolor("grey",.8),
      layout = layoutgg)
 
+# Quem são os usuários mais citados?
+grau = degree(g_citacoes)
+sort(grau, decreasing = T)
