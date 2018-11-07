@@ -13,6 +13,7 @@ if (! "ggplot2" %in% installed.packages()) install.packages("ggplot2")
 if (! "igraph" %in% installed.packages()) install.packages("igraph")
 if (! "stringr" %in% installed.packages()) install.packages("stringr")
 if (! "sna" %in% installed.packages()) install.packages("sna")
+if (! "blockmodels" %in% installed.packages()) install.packages("blockmodels")
 
 # Carrega os pacotes necessários
 library(rtweet)  # conexão com o twitter API
@@ -20,7 +21,6 @@ library(dplyr)   # manipulação de bancos de dados estilo tidy
 library(tidyr)   # manipulação de dados
 library(ggplot2) # Visualização de dados
 library(igraph)  # ARS - análises e visualização
-library(sna)     # Functions for social network analysis
 library(stringr) # Manipulação de texto
 
 # Se já tivermos os tweets salvos num arquivo csv, podemos importá-los para o R com o comando
@@ -122,8 +122,49 @@ plot(g_citacoes, vertex.size = degree(g_citacoes, mode = "in", normalized = T)*2
 
 # Não é bom para redes muito grandes. Vamos tentar uma redução por equivalência estrutural usando
 # blockmodeling
-#ec = equiv.clust(as.matrix(get.adjacency(g_citacoes)))
-#blockmodel(g_citacoes, ec)
-#library(blockmodels)
-#blockmodels::BM_bernoulli
 
+# O método usando as funções do pacote sna não é eficiente para redes muito grandes. Caso
+# queira usá-lo basta "descomentar" o bloco de código abaixo usando CTRL + SHIFT + C
+
+# library(sna)
+# #ec = equiv.clust(as.matrix(get.adjacency(g_citacoes)))
+# blocks = blockmodel(as.matrix(get.adjacency(g_citacoes)), 
+#                     ec = equiv.clust(as.matrix(get.adjacency(g_citacoes))),
+#                     k = 5)
+# 
+# # Plota agora com os cluster gerados por blockmodel
+# plot(g_citacoes, vertex.size = igraph::degree(g_citacoes, mode = "in", normalized = T)*200,
+#      #vertex.label.cex = degree(g_citacoes, mode = "in") / 300, 
+#      vertex.label = NA,
+#      vertex.color = comunidades,
+#      edge.arrow.size = .3, edge.color = adjustcolor("grey",.8),
+#      layout = layoutgg)
+#      #mark.groups = communities(grupos_walktrap))
+
+
+
+# 2 Alternativa: usando o pacote blockmodels
+# Mais eficiente para redes muito grandes
+library(blockmodels)
+modelo = BM_bernoulli("SBM", as.matrix(get.adjacency(g_citacoes)))
+modelo$estimate()
+melhor = which.max(modelo$ICL)
+
+modelo %>% glimpse
+modelo$memberships[[melhor]]$Z
+
+comunidades = vector("integer", nrow(rt))
+for (i in 1:nrow(modelo$memberships[[melhor]]$Z)) {
+  comunidades[i] = which.max(modelo$memberships[[melhor]]$Z[i,])
+}
+
+comunidades
+group_marks = lapply(1:4, function(x) which(comunidades == x))
+
+# Plota agora com os cluster gerados por blockmodel
+plot(g_citacoes, vertex.size = igraph::degree(g_citacoes, mode = "in", normalized = T)*200,
+     #vertex.label.cex = degree(g_citacoes, mode = "in") / 300,
+     vertex.label = NA,
+     vertex.color = comunidades,
+     edge.arrow.size = .3, edge.color = adjustcolor("grey",.8),
+     layout = layoutgg)
