@@ -165,6 +165,6 @@ group_marks = lapply(1:4, function(x) which(comunidades == x))
 plot(g_citacoes, vertex.size = igraph::degree(g_citacoes, mode = "in", normalized = T)*200,
      #vertex.label.cex = degree(g_citacoes, mode = "in") / 300,
      vertex.label = NA,
-     vertex.color = comunidades,
+     vertex.color = comunidades + 1,
      edge.arrow.size = .3, edge.color = adjustcolor("grey",.8),
      layout = layoutgg)
