@@ -16,3 +16,5 @@ remove_accent = function(x) {
   r = gsub("[ýÿ]", "y", r)
   return(r)
 }
+
+removeURL <- function(x) gsub("(f|ht)tp(s?)://\\S+", "", x)
