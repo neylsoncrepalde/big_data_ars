@@ -80,3 +80,40 @@ sort(deg, dec = T)
 plot(p, vertex.label.cex=deg/20, edge.width=(E(p)$weight)/120, 
      edge.color=adjustcolor("grey60", .5),
      vertex.label.color=adjustcolor("red", .7))
+
+
+### E se quisermos construir uma rede apenas entre hashtags
+# Extraindo apenas as hashtags dos tweets
+hashtags = str_extract_all(rt$text, "#\\w+")
+# Tranforma num corpus
+texto = VCorpus(VectorSource(hashtags))
+# Remove os acentos
+texto = tm_map(texto, content_transformer(remove_accent))
+# Plota a nuvem de palavras
+wordcloud(texto, min.freq = 3, max.words = 100, random.order = F)
+
+
+
+# montando a matriz termos documentos como uma matriz 2-mode
+tdm = TermDocumentMatrix(texto)
+tdm = removeSparseTerms(tdm, .996) # retira termos esparsos
+dim(tdm) # confere as dimensões
+
+# Cria a rede
+g <- graph_from_incidence_matrix(as.matrix(tdm))
+# Extrai uma rede de 1-modo de palavras
+p = bipartite_projection(g, which = "FALSE")
+# Define o vértice como sem formato (apenas texto)
+V(p)$shape = "none"
+
+# Calcula o grau para plotar
+deg = degree(p)
+sort(deg, dec = T)
+
+# Plota a rede de palavras
+plot(p, 
+     vertex.label.cex = 1,
+     #vertex.label.cex=deg/15, 
+     edge.width=(E(p)$weight)/100, 
+     edge.color=adjustcolor("grey60", .5),
+     vertex.label.color=adjustcolor("blue", .7))
